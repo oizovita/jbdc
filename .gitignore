@@ -1,0 +1,4 @@
+.idea/
+.mysql/
+target/
+src/main/resources/db.properties

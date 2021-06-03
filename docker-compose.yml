@@ -1,0 +1,19 @@
+# For more information: https://laravel.com/docs/sail
+version: '3'
+services:
+    mysql:
+        image: 'mysql:8.0'
+        container_name: db
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        env_file:
+            - src/main/resources/db.properties
+        environment:
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_DATABASE: 'epicentr'
+            MYSQL_USER: 'user'
+            MYSQL_PASSWORD: 'user'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        volumes:
+            - .mysql:/var/lib/mysql
+
