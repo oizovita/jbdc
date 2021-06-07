@@ -33,10 +33,23 @@ CREATE TABLE IF NOT EXISTS product_shop
 (
     product_id INT UNSIGNED,
     shop_id    INT UNSIGNED,
-    count      INT UNSIGNED,
+    amount      INT UNSIGNED,
 
     FOREIGN KEY (product_id) REFERENCES products (id),
     FOREIGN KEY (shop_id) REFERENCES shops (id)
 );
 
-CREATE INDEX product_shop_index ON product_shop (product_id, shop_id);
+CREATE UNIQUE INDEX product_shop_index ON product_shop (product_id, shop_id);
+
+INSERT INTO cities (id, name)
+values (1, 'Kiev'), (2, 'Lviv'), (3, 'Kropivnitsky');
+
+INSERT INTO shops (city_id, address)
+values (3, 'Popova 8'),
+       (1, 'Polyrna 20D'),
+       (1, 'Berkovetska 6'),
+       (1, 'Hrihorenka 40'),
+       (2, 'Gorodotska 302'),
+       (2, 'Hmelnitskogo');
+
+INSERT INTO categories (name) values ('home'), ('auto'), ('sport'), ('child'), ('technics'), ('garden');

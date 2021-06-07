@@ -1,14 +1,18 @@
 package com.oizovita.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class DB {
     private static DB instance;
 
     private static Connection con;
+    private List bindValues;
+    private HashMap<String, String> query;
+    private String table;
 
     private DB() {
 
@@ -16,23 +20,19 @@ public class DB {
 
     public static DB connection(String driver, String host, String port, String database, String username, String password) throws Exception {
         if (instance == null) {
-            try {
-                con = DriverManager.getConnection(
-                        String.format(
-                                "jdbc:%s://%s:%s/%s?currentSchema=public&user=%s&password=%s&useSSL=true",
-                                driver,
-                                host,
-                                port,
-                                database,
-                                username,
-                                password
-                        )
-                );
+            con = DriverManager.getConnection(
+                    String.format(
+                            "jdbc:%s://%s:%s/%s?currentSchema=public&user=%s&password=%s&useSSL=true",
+                            driver,
+                            host,
+                            port,
+                            database,
+                            username,
+                            password
+                    )
+            );
 
-                instance = new DB();
-            } catch (SQLException e) {
-                throw new Exception(e.getMessage());
-            }
+            instance = new DB();
         }
 
         return instance;
@@ -42,7 +42,47 @@ public class DB {
         return con;
     }
 
-    public ResultSet query(String query) throws SQLException {
-        return con.createStatement().executeQuery(query);
+
+
+    /**
+     * Reset query
+     */
+    protected void reset() {
+        this.query = new HashMap<String, String>();
+        this.table = "";
+        this.bindValues = new ArrayList();
+    }
+
+
+    private String implode(String separator, String[] fields) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 0; i < fields.length; i++) {
+            stringBuilder.append(fields[i]);
+            if (i + 1 != fields.length) {
+                stringBuilder.append(separator);
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public DB select(String table, String[] fields) {
+        this.reset();
+        this.table = table;
+        this.query.put("base", "SELECT " + this.implode(", ", fields) + " FROM " + table);
+        this.query.put("type", "select");
+
+        return this;
+    }
+
+    /**
+     * @return string
+     */
+    public String toSQL() {
+        String sql = this.query.get("base");
+
+        sql += ";";
+        return sql;
     }
 }
