@@ -19,6 +19,8 @@ public class DB {
     }
 
     public static DB connection(String driver, String host, String port, String database, String username, String password) throws Exception {
+
+
         if (instance == null) {
             con = DriverManager.getConnection(
                     String.format(
@@ -35,13 +37,13 @@ public class DB {
             instance = new DB();
         }
 
+
         return instance;
     }
 
     public Connection getConnection() {
         return con;
     }
-
 
 
     /**

@@ -5,6 +5,7 @@ import com.github.javafaker.Faker;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -23,12 +24,10 @@ public class InsertData {
         this.rand = SecureRandom.getInstanceStrong();
     }
 
+
     public void insertDataForProducts() throws SQLException {
         var stmt = this.connection.createStatement();
-
-        var queryCity = "INSERT INTO products (category_id, name, brand, price) VALUES ";
-        var tmpQuery = queryCity;
-
+        this.connection.setAutoCommit(false);
         var resultSet = stmt.executeQuery("SELECT * FROM categories;");
         List<Integer> categoryIds = new ArrayList<>();
         while (resultSet.next()) {
@@ -41,27 +40,71 @@ public class InsertData {
             shopIds.add(resultSet.getInt("id"));
         }
 
-        for (int i = 0; i < 1000000; i++) {
-            tmpQuery += String.format(" (\"%d\", \"%s\", \"%s\", \"%s\"),", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100);
+        var queryCity = "INSERT INTO products (category_id, name, brand, price) VALUES (?, ?, ?, ?) ";
+        PreparedStatement statement = connection.prepareStatement(queryCity);
 
-            if (i % 10000 == 0) {
+        for (int i = 0; i < 1000; i++) {
+
+            statement.setInt(1, categoryIds.get(this.rand.nextInt(categoryIds.size())));
+            statement.setString(2, faker.funnyName().name());
+            statement.setString(3, faker.app().name());
+            statement.setFloat(4, this.rand.nextFloat() * 100);
+
+            statement.addBatch();
+
+            if (i % 100 == 0) {
                 System.out.println(i);
-                tmpQuery += String.format(" (\"%d\", \"%s\", \"%s\", \"%s\");", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100);
-                stmt.execute(tmpQuery, Statement.RETURN_GENERATED_KEYS);
-                var r = stmt.getGeneratedKeys();
-
-                var queryProductShop = "INSERT INTO product_shop (product_id, shop_id, count) VALUE ";
-                var queryProductShopTmp = queryProductShop;
-                while (r.next()) {
-                    queryProductShopTmp += String.format(" (\"%d\", \"%d\", \"%d\")", r.getInt(1), shopIds.get(this.rand.nextInt(shopIds.size())), rand.nextInt(200));
-                    stmt.addBatch(queryProductShopTmp);
-                    queryProductShopTmp = queryProductShop;
-                }
-                stmt.executeBatch();
-                tmpQuery = queryCity;
+                statement.executeBatch();
             }
         }
+
+        statement.executeBatch();
+
+        this.connection.commit();
+        this.connection.close();
     }
+
+
+
+//    public void insertDataForProducts() throws SQLException {
+//        var stmt = this.connection.createStatement();
+//
+//        var queryCity = "INSERT INTO products (category_id, name, brand, price) VALUES ";
+//        var tmpQuery = queryCity;
+//
+//        var resultSet = stmt.executeQuery("SELECT * FROM categories;");
+//        List<Integer> categoryIds = new ArrayList<>();
+//        while (resultSet.next()) {
+//            categoryIds.add(resultSet.getInt("id"));
+//        }
+//
+//        resultSet = stmt.executeQuery("SELECT * FROM shops;");
+//        List<Integer> shopIds = new ArrayList<>();
+//        while (resultSet.next()) {
+//            shopIds.add(resultSet.getInt("id"));
+//        }
+//
+//        for (int i = 0; i < 1000000; i++) {
+//            tmpQuery += String.format(" (\"%d\", \"%s\", \"%s\", \"%s\"),", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100);
+//
+//            if (i % 10000 == 0) {
+//                System.out.println(i);
+//                tmpQuery += String.format(" (\"%d\", \"%s\", \"%s\", \"%s\");", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100);
+//                stmt.execute(tmpQuery, Statement.RETURN_GENERATED_KEYS);
+//                var r = stmt.getGeneratedKeys();
+//
+//                var queryProductShop = "INSERT INTO product_shop (product_id, shop_id, count) VALUE ";
+//                var queryProductShopTmp = queryProductShop;
+//                while (r.next()) {
+//                    queryProductShopTmp += String.format(" (\"%d\", \"%d\", \"%d\")", r.getInt(1), shopIds.get(this.rand.nextInt(shopIds.size())), rand.nextInt(200));
+//                    stmt.addBatch(queryProductShopTmp);
+//                    queryProductShopTmp = queryProductShop;
+//                }
+//                stmt.executeBatch();
+//                tmpQuery = queryCity;
+//            }
+//        }
+//    }
 
 //    public void insertDataForProducts() throws SQLException {
 //        var stmt = this.connection.createStatement();
