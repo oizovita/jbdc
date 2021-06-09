@@ -39,8 +39,6 @@ CREATE TABLE IF NOT EXISTS product_shop
     FOREIGN KEY (shop_id) REFERENCES shops (id)
 );
 
-CREATE UNIQUE INDEX product_shop_index ON product_shop (product_id, shop_id);
-
 INSERT INTO cities (id, name)
 values (1, 'Kiev'), (2, 'Lviv'), (3, 'Kropivnitsky');
 
