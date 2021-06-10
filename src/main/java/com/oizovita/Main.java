@@ -2,7 +2,7 @@ package com.oizovita;
 
 import com.oizovita.database.CreateTable;
 import com.oizovita.database.DB;
-import com.oizovita.database.InsertData;
+import com.oizovita.database.ProductSeeder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,9 +30,25 @@ public class Main {
             }
 
             if (args[0].equals("generate")) {
-                var ct = new InsertData(db.getConnection());
-                ct.insertDataForProducts();
+                var ct = new ProductSeeder(db.getConnection());
+                logger.info("Time - {} minutes", ct.run());
             }
+        }
+
+        var category = "'sport'";
+
+        try (var stmt = db.getConnection().createStatement()) {
+            var r = stmt.executeQuery("select max(amount) amount, shops.address\n" +
+                    "from shops\n" +
+                    "         left join product_shop ps on shops.id = ps.shop_id\n" +
+                    "         left join products p on p.id = ps.product_id\n" +
+                    "         left join categories c on c.id = p.category_id\n" +
+                    "where c.name = " + category);
+
+            if (r.next()) {
+                logger.info("{} - {}", r.getString(2), r.getString(1));
+            }
+
         }
     }
 }
