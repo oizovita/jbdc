@@ -53,24 +53,10 @@ public class DB {
         this.bindValues = new ArrayList();
     }
 
-
-    private String implode(String separator, String[] fields) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (int i = 0; i < fields.length; i++) {
-            stringBuilder.append(fields[i]);
-            if (i + 1 != fields.length) {
-                stringBuilder.append(separator);
-            }
-        }
-
-        return stringBuilder.toString();
-    }
-
     public DB select(String table, String[] fields) {
         this.reset();
         this.table = table;
-        this.query.put("base", "SELECT " + this.implode(", ", fields) + " FROM " + table);
+        this.query.put("base", "SELECT " + String.join(", ", fields) + " FROM " + table);
         this.query.put("type", "select");
 
         return this;

@@ -1,6 +1,7 @@
 package com.oizovita.database;
 
 import com.github.javafaker.Faker;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,10 +40,13 @@ public class ProductSeeder {
     }
 
     public long run() {
-        long time = System.currentTimeMillis();
+        var stopWatch = new StopWatch();
+        stopWatch.start();
         this.insertProducts();
         this.insertShopProduct();
-        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - time);
+        stopWatch.stop();
+
+        return TimeUnit.NANOSECONDS.toSeconds(stopWatch.getTime());
     }
 
     private void insertProducts() {
@@ -55,7 +59,7 @@ public class ProductSeeder {
             var queryCity = "INSERT INTO products (category_id, name, brand, price) VALUES ";
             var tmpQuery = new StringBuilder(queryCity);
 
-            for (int i = 0; i < 100; i++) {
+            for (var i = 0; i < 100; i++) {
                 tmpQuery.append(String.format(" (\"%d\", \"%s\", \"%s\", \"%s\"),", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100));
                 if (i % 10 == 0) {
                     tmpQuery.append(String.format(" (\"%d\", \"%s\", \"%s\", \"%s\");", categoryIds.get(this.rand.nextInt(categoryIds.size())), faker.funnyName().name(), faker.app().name(), this.rand.nextFloat() * 100));

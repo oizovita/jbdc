@@ -38,15 +38,15 @@ public class Main {
         var category = "'sport'";
 
         try (var stmt = db.getConnection().createStatement()) {
-            var r = stmt.executeQuery("select max(amount) amount, shops.address\n" +
+            var r = stmt.executeQuery("select address, amount\n" +
                     "from shops\n" +
                     "         left join product_shop ps on shops.id = ps.shop_id\n" +
                     "         left join products p on p.id = ps.product_id\n" +
                     "         left join categories c on c.id = p.category_id\n" +
-                    "where c.name = " + category);
+                    "where c.name = " + category + " order by amount desc limit 1;");
 
             if (r.next()) {
-                logger.info("{} - {}", r.getString(2), r.getString(1));
+                logger.info("{} - amount {} ", r.getString(1), r.getString(2));
             }
 
         }
