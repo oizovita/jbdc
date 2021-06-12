@@ -2,11 +2,15 @@ package com.oizovita;
 
 import com.oizovita.database.CreateTable;
 import com.oizovita.database.DB;
-import com.oizovita.database.ProductSeeder;
+import com.oizovita.database.seeds.ProductSeeder;
+import com.oizovita.database.seeds.ShopProductSeed;
+import com.oizovita.ecxeption.BuilderException;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 
 public class Main {
@@ -30,25 +34,47 @@ public class Main {
             }
 
             if (args[0].equals("generate")) {
-                var ct = new ProductSeeder(db.getConnection());
-                logger.info("Time - {} minutes", ct.run());
+                var stopWatch = new StopWatch();
+                stopWatch.start();
+                var p = new ProductSeeder(db.getConnection(), db.getIds("categories"));
+                for (var i = 0; i < 1000; i++){
+                    var thread1 = new Thread(p);
+                    thread1.start();
+                }
+
+                ShopProductSeed sp ;
+                for (var i = 0; i < 1000; i++){
+                    var limit = 1000;
+                    sp = new ShopProductSeed(db.getConnection(), db.getIds("shops"), limit, limit * i);
+                    var thread1 = new Thread(sp);
+                    thread1.start();
+                }
+
+                stopWatch.stop();
+
+                System.out.println(TimeUnit.NANOSECONDS.toSeconds(stopWatch.getTime()));
+
             }
         }
 
-        var category = "'sport'";
-
-        try (var stmt = db.getConnection().createStatement()) {
-            var r = stmt.executeQuery("select address, amount\n" +
-                    "from shops\n" +
-                    "         left join product_shop ps on shops.id = ps.shop_id\n" +
-                    "         left join products p on p.id = ps.product_id\n" +
-                    "         left join categories c on c.id = p.category_id\n" +
-                    "where c.name = " + category + " order by amount desc limit 1;");
-
-            if (r.next()) {
-                logger.info("{} - amount {} ", r.getString(1), r.getString(2));
-            }
-
-        }
+//        var category = "sport";
+//
+//        try {
+//            var r = db
+//                    .select("shops", new String[]{"address", "amount"})
+//                    .leftJoin("product_shop ps", "shops.id", "=", "ps.shop_id")
+//                    .leftJoin("products p", "p.id", "=", "ps.product_id")
+//                    .leftJoin("categories c", "c.id", "=", "p.category_id")
+//                    .where("c.name", category, "=")
+//                    .orderBy("amount", "DESC")
+//                    .limit(1)
+//                    .get();
+//
+//            if (r.next()) {
+//                logger.info("{} - amount {} ", r.getString(1), r.getString(2));
+//            }
+//        } catch (BuilderException exception) {
+//            logger.error(exception.getMessage());
+//        }
     }
 }
