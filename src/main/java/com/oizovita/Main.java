@@ -31,9 +31,7 @@ public class Main {
             if (args[0].equals("init_database")) {
                 var ct = new CreateTable(db.getConnection());
                 ct.run();
-            }
-
-            if (args[0].equals("generate")) {
+            } else if (args[0].equals("generate")) {
                 var stopWatch = new StopWatch();
                 stopWatch.start();
                 var p = new ProductSeeder(db.getConnection(), db.getIds("categories"));
@@ -54,27 +52,25 @@ public class Main {
 
                 System.out.println(TimeUnit.NANOSECONDS.toSeconds(stopWatch.getTime()));
 
+            }else {
+                try {
+                    var r = db
+                            .select("shops", new String[]{"address", "amount"})
+                            .leftJoin("product_shop ps", "shops.id", "=", "ps.shop_id")
+                            .leftJoin("products p", "p.id", "=", "ps.product_id")
+                            .leftJoin("categories c", "c.id", "=", "p.category_id")
+                            .where("c.name", args[0], "=")
+                            .orderBy("amount", "DESC")
+                            .limit(1)
+                            .get();
+
+                    if (r.next()) {
+                        logger.info("{} - amount {} ", r.getString(1), r.getString(2));
+                    }
+                } catch (BuilderException exception) {
+                    logger.error(exception.getMessage());
+                }
             }
         }
-
-//        var category = "sport";
-//
-//        try {
-//            var r = db
-//                    .select("shops", new String[]{"address", "amount"})
-//                    .leftJoin("product_shop ps", "shops.id", "=", "ps.shop_id")
-//                    .leftJoin("products p", "p.id", "=", "ps.product_id")
-//                    .leftJoin("categories c", "c.id", "=", "p.category_id")
-//                    .where("c.name", category, "=")
-//                    .orderBy("amount", "DESC")
-//                    .limit(1)
-//                    .get();
-//
-//            if (r.next()) {
-//                logger.info("{} - amount {} ", r.getString(1), r.getString(2));
-//            }
-//        } catch (BuilderException exception) {
-//            logger.error(exception.getMessage());
-//        }
     }
 }
