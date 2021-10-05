@@ -50,7 +50,7 @@ public class Main {
 
                 stopWatch.stop();
 
-                System.out.println(TimeUnit.NANOSECONDS.toSeconds(stopWatch.getTime()));
+                logger.info(TimeUnit.NANOSECONDS.toSeconds(stopWatch.getTime()));
 
             }else {
                 try {

@@ -56,9 +56,4 @@ public class ProductSeeder implements Runnable{
             }
         }
     }
-
-//
-//    }
-
-
 }
